@@ -1,70 +1,81 @@
 <template>
-  <div>
-    <div class="search-section">
-      <label for="search" class="label">Search category:</label>
-      <select
-        name="search"
-        id="search"
-        class="select-filter"
-        v-model="selectCategory"
-        @change="categoryUpdate(selectCategory)"
-      >
-        <option disabled value="">select search key</option>
-        <option v-for="filter in filters" :key="filter" :value="filter">
-          {{ filter }}
-        </option>
-      </select>
-    </div>
-    <div class="search-section">
-      <input
-        type="text"
-        class="search-input"
-        v-model="inputValue"
-        @keyup="filterString(inputValue)"
-      />
-    </div>
+  <div v-if="!data.length" class="loader-spenner">
+    <img src="../../images/loading.gif" alt="" />
   </div>
-  <div class="table-wrapper">
-    <div class="table-scroll">
-      <table class="data-view">
-        <tr class="info-title">
-          <th v-for="(value, key) in filteredData[0]" :key="key">
-            {{ key }}
-            <div class="sort-options">
-              <img src="../../images/ascending.png" @click="descort(key)" />
-              <img src="../../images/descending.png" @click="ascort(key)" />
-            </div>
-          </th>
-        </tr>
-        <tr v-for="itm in filteredData" :key="itm">
-          <td v-for="(info, pro, idx) in itm" :key="idx">
-            {{ info }}
-          </td>
-        </tr>
-      </table>
+  <div v-else>
+    <div>
+      <div class="search-section">
+        <label for="search" class="label">Search category:</label>
+        <select
+          name="search"
+          id="search"
+          class="select-filter"
+          v-model="selectCategory"
+          @change="categoryUpdate(selectCategory)"
+        >
+          <option disabled value="">select search key</option>
+          <option v-for="filter in filters" :key="filter" :value="filter">
+            {{ filter }}
+          </option>
+        </select>
+      </div>
+      <div class="search-section">
+        <input
+          type="text"
+          class="search-input"
+          v-model="inputValue"
+          @keyup="filterString(inputValue)"
+        />
+      </div>
+    </div>
+    <div class="table-wrapper">
+      <div class="table-scroll">
+        <table class="data-view">
+          <tr class="info-title">
+            <th v-for="(value, key) in filteredData[0]" :key="key">
+              {{ key }}
+              <div class="sort-options">
+                <img src="../../images/ascending.png" @click="descort(key)" />
+                <img src="../../images/descending.png" @click="ascort(key)" />
+              </div>
+            </th>
+          </tr>
+          <tr v-for="itm in filteredData" :key="itm">
+            <td v-for="(info, pro, idx) in itm" :key="idx">
+              {{ info }}
+            </td>
+          </tr>
+        </table>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
 import { defineProps, computed, ref } from "vue"
-const requestURL = defineProps(["requestURL"])
 
+const url = defineProps(["requestURL"])
 const inputValue = ref("")
 const selectCategory = ref("")
-
 ///////////////////////////////////////////////
 const data = ref([])
-const filters = ref(["name", "id", "age"])
+const filters = ref([])
 
-fetch("https://654b92025b38a59f28ef5698.mockapi.io/data")
-  .then((r) => r.json())
-  .then((r) => {
-    data.value = r
-  })
-  .catch(() => {
-    console.error("Responce Error")
-  })
+async function fetchData(req) {
+  try {
+    const response = await fetch(req)
+    const dataValue = await response.json()
+
+    data.value = dataValue
+    filters.value = Object.keys(data.value[0])
+  } catch (error) {
+    console.error("Response Error", error)
+  }
+}
+
+// Call the async function
+fetchData(url.requestURL)
+
 const fltr = ref("name")
 const fltrSTR = ref("")
 const filterString = (strVal) => {
@@ -102,7 +113,6 @@ const descort = (sortBaseCategory) => {
 }
 
 const filteredData = computed(() => {
-  console.log("in computed")
   if (fltrSTR.value.length) {
     const result = ref([])
     data.value.forEach((element) => {
@@ -150,20 +160,21 @@ const filteredData = computed(() => {
   height: 200px;
   overflow: auto;
   margin-top: 20px;
+  border: 1px solid black;
 }
 .table-wrapper table {
   width: 100%;
 }
 .search-section {
   margin-top: 5px;
-  width: 200px;
+  width: 300px;
 }
 .search-input {
   width: 100%;
 }
 .select-filter {
   margin-left: 10px;
-  width: 69px;
+  width: 170px;
 }
 .sort-options {
   width: 15px;
@@ -175,5 +186,13 @@ const filteredData = computed(() => {
   float: right;
   height: 8px;
   margin-top: 3px;
+}
+.loader-spenner {
+  width: 100%;
+  border: 1px solid black;
+  text-align: center;
+}
+.loader-spenner img {
+  width: 120px;
 }
 </style>
