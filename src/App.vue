@@ -9,9 +9,7 @@
 import { ref } from "vue"
 import Dataviewer from "./assets/components/data-viewer/data-viewer.vue"
 const URL = ref("https://654b92025b38a59f28ef5698.mockapi.io/data")
-const URL2 = ref(
-  "https://api.json-generator.com/templates/smkmiq7L320t/data?access_token=8zj9pta04l3glhsrp6lvlvrlit6w6iejgwlq3s9e"
-)
+const URL2 = ref("https://run.mocky.io/v3/512a3387-8171-4578-a4ef-b01a7a3b28c4")
 </script>
 
 <style scoped></style>
