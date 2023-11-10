@@ -7,7 +7,7 @@
         id="search"
         class="select-filter"
         v-model="selectCategory"
-        @change="dispatcher('categoryUpdate', selectCategory)"
+        @change="categoryUpdate(selectCategory)"
       >
         <option disabled value="">select search key</option>
         <option v-for="filter in filters" :key="filter" :value="filter">
@@ -20,7 +20,7 @@
         type="text"
         class="search-input"
         v-model="inputValue"
-        @keyup="dispatcher('filterString', inputValue)"
+        @keyup="filterString(inputValue)"
       />
     </div>
   </div>
@@ -28,21 +28,15 @@
     <div class="table-scroll">
       <table class="data-view">
         <tr class="info-title">
-          <th v-for="(value, key) in data[0]" :key="key">
+          <th v-for="(value, key) in filteredData[0]" :key="key">
             {{ key }}
             <div class="sort-options">
-              <img
-                src="../../images/ascending.png"
-                @click="dispatcher('descort', key)"
-              />
-              <img
-                src="../../images/descending.png"
-                @click="dispatcher('ascort', key)"
-              />
+              <img src="../../images/ascending.png" @click="descort(key)" />
+              <img src="../../images/descending.png" @click="ascort(key)" />
             </div>
           </th>
         </tr>
-        <tr v-for="itm in data" :key="itm">
+        <tr v-for="itm in filteredData" :key="itm">
           <td v-for="(info, pro, idx) in itm" :key="idx">
             {{ info }}
           </td>
@@ -53,17 +47,78 @@
 </template>
 
 <script setup>
-import { defineProps, defineEmits, ref } from "vue"
-defineProps(["data", "filters"])
-const dispatcher = defineEmits([
-  "filterString",
-  "categoryUpdate",
-  "ascort",
-  "descort",
-])
+import { defineProps, computed, ref } from "vue"
+const requestURL = defineProps(["requestURL"])
 
 const inputValue = ref("")
 const selectCategory = ref("")
+
+///////////////////////////////////////////////
+const data = ref([])
+const filters = ref(["name", "id", "age"])
+
+fetch("https://654b92025b38a59f28ef5698.mockapi.io/data")
+  .then((r) => r.json())
+  .then((r) => {
+    data.value = r
+  })
+  .catch(() => {
+    console.error("Responce Error")
+  })
+const fltr = ref("name")
+const fltrSTR = ref("")
+const filterString = (strVal) => {
+  fltrSTR.value = strVal
+}
+const categoryUpdate = (searchCategory) => {
+  fltr.value = searchCategory
+}
+const ascort = (sortBaseCategory) => {
+  const compare = (a, b) => {
+    if (a[sortBaseCategory] < b[sortBaseCategory]) {
+      return -1
+    }
+    if (a[sortBaseCategory] > b[sortBaseCategory]) {
+      return 1
+    }
+    return 0
+  }
+
+  filteredData.value.sort(compare)
+}
+
+const descort = (sortBaseCategory) => {
+  const compare = (b, a) => {
+    if (a[sortBaseCategory] < b[sortBaseCategory]) {
+      return -1
+    }
+    if (a[sortBaseCategory] > b[sortBaseCategory]) {
+      return 1
+    }
+    return 0
+  }
+
+  filteredData.value.sort(compare)
+}
+
+const filteredData = computed(() => {
+  console.log("in computed")
+  if (fltrSTR.value.length) {
+    const result = ref([])
+    data.value.forEach((element) => {
+      for (const [key, value] of Object.entries(element)) {
+        if (
+          key == fltr.value &&
+          String(value).indexOf(String(fltrSTR.value)) != -1
+        ) {
+          result.value.push(element)
+        }
+      }
+    })
+    return result.value
+  }
+  return data.value
+})
 </script>
 
 <style scoped>
