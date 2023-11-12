@@ -49,10 +49,17 @@
       </div>
     </div>
   </div>
+  <slot class="default-slot"></slot>
 </template>
 
 <script setup>
-import { defineProps, computed, ref } from "vue"
+import {
+  defineProps,
+  computed,
+  ref,
+  defineEmits,
+  getCurrentInstance,
+} from "vue"
 
 const url = defineProps(["requestURL"])
 const inputValue = ref("")
@@ -60,7 +67,7 @@ const selectCategory = ref("")
 ///////////////////////////////////////////////
 const data = ref([])
 const filters = ref([])
-
+const emitsData = defineEmits(["resolvedData"])
 async function fetchData(req) {
   try {
     const response = await fetch(req)
@@ -68,6 +75,7 @@ async function fetchData(req) {
 
     data.value = dataValue
     filters.value = Object.keys(data.value[0])
+    emitsData("resolvedData", [data.value, filters.value])
   } catch (error) {
     console.error("Response Error", error)
   }
@@ -194,5 +202,8 @@ const filteredData = computed(() => {
 }
 .loader-spenner img {
   width: 120px;
+}
+.default-slot {
+  float: left;
 }
 </style>
