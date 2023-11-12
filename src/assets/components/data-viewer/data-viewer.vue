@@ -32,6 +32,7 @@
       <div class="table-scroll">
         <table class="data-view">
           <tr class="info-title">
+            <th class="chck-box-cell"></th>
             <th v-for="(value, key) in filteredData[0]" :key="key">
               {{ key }}
               <div class="sort-options">
@@ -41,33 +42,45 @@
             </th>
           </tr>
           <tr v-for="itm in filteredData" :key="itm">
-            <td v-for="(info, pro, idx) in itm" :key="idx">
-              {{ info }}
+            <td
+              v-if="props.checkedRows.indexOf(Number(itm.id)) > -1"
+              class="chck-box-cell"
+            >
+              <input
+                type="checkbox"
+                @change="emitsData('checkedRow', itm.id)"
+                :name="`column-${itm.id}`"
+                checked
+              />
             </td>
+            <td v-else class="chck-box-cell">
+              <input
+                type="checkbox"
+                @change="emitsData('checkedRow', itm.id)"
+                :name="`column-${itm.id}`"
+              />
+            </td>
+            <slot :name="`column-${itm.id}`" :itm="itm">
+              <td v-for="([k, v], key) in Object.entries(itm)" :key="key">
+                {{ v }}
+              </td>
+            </slot>
           </tr>
         </table>
       </div>
     </div>
   </div>
-  <slot class="default-slot"></slot>
 </template>
 
 <script setup>
-import {
-  defineProps,
-  computed,
-  ref,
-  defineEmits,
-  getCurrentInstance,
-} from "vue"
-
-const url = defineProps(["requestURL"])
+import { defineProps, computed, ref, defineEmits } from "vue"
+const props = defineProps(["requestURL", "checkedRows"])
 const inputValue = ref("")
 const selectCategory = ref("")
-///////////////////////////////////////////////
 const data = ref([])
 const filters = ref([])
-const emitsData = defineEmits(["resolvedData"])
+const slotsNames = ref([])
+const emitsData = defineEmits(["resolvedData", "checkedRow"])
 async function fetchData(req) {
   try {
     const response = await fetch(req)
@@ -75,15 +88,17 @@ async function fetchData(req) {
 
     data.value = dataValue
     filters.value = Object.keys(data.value[0])
-    emitsData("resolvedData", [data.value, filters.value])
+    for (let id in Object.keys(data.value)) {
+      slotsNames.value.push(`column-${Number(id) + 1}`)
+    }
+    emitsData("resolvedData", slotsNames.value)
   } catch (error) {
     console.error("Response Error", error)
   }
 }
 
 // Call the async function
-fetchData(url.requestURL)
-
+fetchData(props.requestURL)
 const fltr = ref("name")
 const fltrSTR = ref("")
 const filterString = (strVal) => {
@@ -205,5 +220,8 @@ const filteredData = computed(() => {
 }
 .default-slot {
   float: left;
+}
+.chck-box-cell {
+  width: 30px !important;
 }
 </style>
