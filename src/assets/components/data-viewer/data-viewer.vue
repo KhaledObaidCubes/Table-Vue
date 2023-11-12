@@ -175,6 +175,7 @@ const filteredData = computed(() => {
   color: white;
   background-color: #1e3050;
 }
+
 .table-wrapper {
   position: relative;
 }
