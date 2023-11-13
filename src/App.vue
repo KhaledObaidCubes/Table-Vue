@@ -27,11 +27,7 @@ import { ref } from "vue"
 import Dataviewer from "./assets/components/data-viewer/data-viewer.vue"
 const selectedList = ref([11, 5, 6, 3, 7])
 const updateList = ($event) => {
-  if (selectedList.value.indexOf(Number($event)) == -1) {
-    selectedList.value.push(Number($event))
-  } else {
-    selectedList.value.splice(selectedList.value.indexOf(Number($event)), 1)
-  }
+  selectedList.value = $event
 }
 const dataObject = ref([
   {

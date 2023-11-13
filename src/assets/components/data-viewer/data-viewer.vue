@@ -48,7 +48,7 @@
             >
               <input
                 type="checkbox"
-                @change="emitsData('checkedRow', itm.id)"
+                @change="updateList(itm.id)"
                 :name="`column-${itm.id}`"
                 checked
               />
@@ -56,7 +56,7 @@
             <td v-else class="chck-box-cell">
               <input
                 type="checkbox"
-                @change="emitsData('checkedRow', itm.id)"
+                @change="updateList(itm.id)"
                 :name="`column-${itm.id}`"
               />
             </td>
@@ -152,6 +152,15 @@ const filteredData = computed(() => {
   }
   return data.value
 })
+
+const updateList = ($event) => {
+  if (props.checkedRows.indexOf(Number($event)) == -1) {
+    props.checkedRows.push(Number($event))
+  } else {
+    props.checkedRows.splice(props.checkedRows.indexOf(Number($event)), 1)
+  }
+  emitsData("checkedRow", props.checkedRows)
+}
 </script>
 
 <style scoped>
